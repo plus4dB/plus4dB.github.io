@@ -1,1 +1,1 @@
-$ plus4dB..github.io
+For random scratch codes
