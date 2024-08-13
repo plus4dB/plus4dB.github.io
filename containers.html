@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Container Number Generator</title>
+    <style>
+        body {
+            font-family: Jetbrains Mono;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #333;
+            color: #eee;
+            margin: 0;
+        }
+
+        #container {
+            text-align: center;
+            /* background: #444; */
+            padding: 20px;
+            /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); */
+            /* border-radius: 10px; */
+            width: 90%;
+            max-width: 1200px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #007BFF;
+            color: #fff;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .step-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .step {
+            flex: 1;
+            margin: 0 10px;
+            min-width: 200px;
+        }
+
+        .step-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #555;
+            padding: 8px;
+            text-align: center;
+            color: #ddd;
+        }
+
+        th {
+            background-color: #555;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 3rem;
+            font-weight: bold;
+
+        }
+
+        .boxed-output {
+            border: 2px solid #007BFF;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            background-color: #222;
+            color: #fff;
+            display: inline-block;
+            margin: 1rem;
+        }
+
+        .modulo-output {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #ddd;
+        }
+
+        .btn-three {
+            color: #FFF;
+            transition: all 0.5s;
+            position: relative;
+            font-size: 2rem;
+        }
+
+        .btn-three::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background-color: rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+
+        .btn-three:hover::before {
+            opacity: 0 ;
+            transform: scale(0.5,0.5);
+        }
+
+        .btn-three::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.5);
+            transform: scale(1.2,1.2);
+        }
+
+        .btn-three:hover::after {
+            opacity: 1;
+            transform: scale(1,1);
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="result"></div>
+        <div class="btn btn-three" onclick="generateContainerNumber()">
+            <span>Generate</span>
+        </div>
+        <div class="step-container">
+            <div class="step" id="letter-table"></div>
+            <div class="step" id="multiplications"></div>
+            <div class="step" id="intermediates"></div>
+        </div>
+    </div>
+
+    <script>
+        // Letter values as per the specified rules
+        const letterValues = {
+            'A': 10, 'B': 12, 'C': 13, 'D': 14, 'E': 15, 'F': 16, 'G': 17, 'H': 18, 'I': 19, 'J': 20,
+            'K': 21, 'L': 23, 'M': 24, 'N': 25, 'O': 26, 'P': 27, 'Q': 28, 'R': 29, 'S': 30, 'T': 31,
+            'U': 32, 'V': 34, 'W': 35, 'X': 36, 'Y': 37, 'Z': 38
+        };
+
+        function generateRandomLetter() {
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            return letters.charAt(Math.floor(Math.random() * letters.length));
+        }
+
+        function generateRandomDigit() {
+            return Math.floor(Math.random() * 10);
+        }
+
+        function calculateCheckDigit(containerNumber) {
+            let letterTableDiv = document.getElementById('letter-table');
+            let multiplicationsDiv = document.getElementById('multiplications');
+            let intermediatesDiv = document.getElementById('intermediates');
+
+            // Show the letter table
+            let letterTable = `
+            <div class="step-title">Letter Values:</div>
+            <table>
+                <tr><th>Letter</th><th>Value</th><th>Letter</th><th>Value</th></tr>`;
+            
+            const letters = Object.keys(letterValues);
+            const mid = Math.ceil(letters.length / 2);
+            
+            for (let i = 0; i < mid; i++) {
+                letterTable += `<tr>
+                    <td>${letters[i]}</td><td>${letterValues[letters[i]]}</td>`;
+                if (mid + i < letters.length) {
+                    letterTable += `<td>${letters[mid + i]}</td><td>${letterValues[letters[mid + i]]}</td>`;
+                } else {
+                    letterTable += `<td></td><td></td>`;
+                }
+                letterTable += `</tr>`;
+            }
+            
+            letterTable += `</table>`;
+            letterTableDiv.innerHTML = letterTable;
+
+            // Show the multiplications
+            let sum = 0;
+            let multiplications = `
+            <div class="step-title">Multiplications:</div>
+            <table>
+                <tr><th>Character</th><th>Value</th><th>2^Position</th><th>Product</th></tr>`;
+            
+            for (let i = 0; i < containerNumber.length; i++) {
+                let char = containerNumber.charAt(i);
+                let value = letterValues[char] || parseInt(char, 10); // Get letter value or digit
+                let power = Math.pow(2, i);
+                let product = value * power;
+                sum += product;
+                multiplications += `<tr>
+                    <td>${char}</td><td>${value}</td><td>${power}</td><td>${product}</td>
+                </tr>`;
+            }
+            multiplications += `</table>`;
+            multiplicationsDiv.innerHTML = multiplications;
+
+            // Show the intermediate steps
+            let floorDivision = Math.floor(sum / 11);
+            let product = floorDivision * 11;
+            let remainder = sum - product;
+            let checkDigit = remainder % 10;
+            checkDigit = checkDigit === 10 ? 0 : checkDigit;
+
+            let intermediateSteps = `
+            <div class="step-title">Intermediate Steps:</div>
+            <div>Sum: ${sum}</div>
+            <div>Floor of Sum / 11: ${floorDivision}</div>
+            <div class="modulo-output">Product: ${floorDivision} * 11 = ${product}</div>
+            <div class="modulo-output">Remainder: ${sum} - ${product} = ${remainder}</div>
+            <div class="modulo-output">Modulo: ${remainder} % 10 = ${checkDigit}</div>
+            <div class="boxed-output">Check Digit: ${checkDigit}</div>`;
+            intermediatesDiv.innerHTML = intermediateSteps;
+
+            return checkDigit;
+        }
+
+        function generateContainerNumber() {
+            let containerNumber = '';
+            for (let i = 0; i < 3; i++) {
+                containerNumber += generateRandomLetter();
+            }
+            containerNumber += 'U';
+            for (let i = 0; i < 6; i++) {
+                containerNumber += generateRandomDigit();
+            }
+            let checkDigit = calculateCheckDigit(containerNumber);
+            containerNumber += checkDigit;
+            document.getElementById('result').innerText = `Container Number: ${containerNumber}`;
+        }
+    </script>
+</body>
+</html>
