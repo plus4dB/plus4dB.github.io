@@ -190,6 +190,11 @@
                 transition: all 0.3s ease-in;
             }
         }
+        @media (max-width: 1150px) {
+            #toggle {
+                display: none; /* Hide the toggle on screens narrower than 768px */
+            }
+        }
         
         #calcs {
             transition: transform 0.8s cubic-bezier(0.68, -0.6, 0.32, 1.6), opacity 0.8s cubic-bezier(0.68, -0.6, 0.32, 1.6);
