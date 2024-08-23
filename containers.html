@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Container Number Generator</title>
+    <link href='https://fonts.googleapis.com/css?family=JetBrains Mono' rel='stylesheet'>
     <style>
         body {
             font-family: Jetbrains Mono;
@@ -14,6 +15,7 @@
             background-color: #333;
             color: #eee;
             margin: 0;
+            overflow: hidden;
         }
 
         #container {
@@ -24,6 +26,7 @@
             /* border-radius: 10px; */
             width: 90%;
             max-width: 1200px;
+            position: relative;
         }
 
         button {
@@ -76,10 +79,10 @@
         }
 
         #result {
-            margin-top: 20px;
+            /* margin-top: 20px; */
             font-size: 3rem;
             font-weight: bold;
-
+            margin-bottom: 20px;
         }
 
         .boxed-output {
@@ -104,6 +107,7 @@
             transition: all 0.5s;
             position: relative;
             font-size: 2rem;
+            margin-bottom: 20px;
         }
 
         .btn-three::before {
@@ -141,15 +145,109 @@
             opacity: 1;
             transform: scale(1,1);
         }
+
+        .toggle {
+            margin-bottom: 40px;
+
+            input[type="checkbox"]{
+                display: none;
+            }
+            
+            label {
+                color: #ddd;
+                position: relative;
+            }
+            
+            input[type="checkbox"] + label::before {
+                content: ' ';
+                display: block;
+                height: 18px;
+                width: 45px;
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 9px;
+                position: absolute;
+                top: 0px;
+                left: -65px;
+                background: rgba(255,255,255,0.1);
+            }
+            
+            input[type="checkbox"] + label::after {
+                content: ' ';
+                display: block;
+                height: 30px;
+                width: 30px;
+                border: 1px solid #007BFF;   
+                border-radius: 50%;
+                position: absolute;
+                top: -6px;
+                left: -75px;
+                background: #007BFF;
+                transition: all 0.3s ease-in;
+            }
+            
+            input[type="checkbox"]:checked + label::after {
+                left: -40px; 
+                transition: all 0.3s ease-in;
+            }
+        }
+        
+        #calcs {
+            transition: transform 0.8s cubic-bezier(0.68, -0.6, 0.32, 1.6), opacity 0.8s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+            transform: translateY(100%);
+            opacity: 0;
+            
+        }
+
+        #calcs.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        #copy-button {
+            display: none;
+            padding-left: 3rem;
+            padding-right: 3rem;
+        }
+
+        @keyframes borderAnimation {
+            0% {
+                border: 2px solid transparent;
+                box-shadow: 0 0 0 0 transparent;
+                opacity: 0;
+            }
+            50% {
+                border: 2px solid #007BFF;
+                box-shadow: 0 0 10px 2px #007BFF; /* Simulates border growth */
+                opacity: 1;
+            }
+            100% {
+                border: 2px solid #007BFF;
+                box-shadow: 0 0 0 0 transparent;
+                opacity: 0;
+            }
+        }
+
+        #result.animate-border {
+            animation: borderAnimation 0.2s 2 ease-out;
+            border: 2px solid transparent; /* Initial border for animation */
+        }
+
     </style>
 </head>
 <body>
     <div id="container">
         <div id="result"></div>
+        <div id="copy-button" class="btn btn-three" onclick="copyToClipboard()">
+            <span>Copy to Clipboard</span>
+        </div>
         <div class="btn btn-three" onclick="generateContainerNumber()">
             <span>Generate</span>
         </div>
-        <div class="step-container">
+        <div id="toggle" class="toggle">
+            <input type="checkbox" id="temp">
+            <label for="temp">Show Calculation Steps</label>
+          </div>
+        <div id="calcs" class="step-container">
             <div class="step" id="letter-table"></div>
             <div class="step" id="multiplications"></div>
             <div class="step" id="intermediates"></div>
@@ -242,6 +340,7 @@
         }
 
         function generateContainerNumber() {
+            // document.getElementById('container').classList.add('move-up');
             let containerNumber = '';
             for (let i = 0; i < 3; i++) {
                 containerNumber += generateRandomLetter();
@@ -253,7 +352,51 @@
             let checkDigit = calculateCheckDigit(containerNumber);
             containerNumber += checkDigit;
             document.getElementById('result').innerText = `Container Number: ${containerNumber}`;
+
+            const copyButton = document.getElementById('copy-button');
+            copyButton.style.display = 'inline-block';
         }
+
+        let toggle = document.getElementById('temp');
+        let calcContainer = document.getElementById('calcs');
+        // let mainContainer = document.getElementById('container');
+        toggle.addEventListener('change', function() {
+            if (this.checked) {
+                calcContainer.classList.add('show');
+                // mainContainer.classList.add('calcs-shown');
+            }
+            else {
+                calcContainer.classList.remove('show');
+                // mainContainer.classList.remove('calcs-shown');
+            }
+        });
+
+        function copyToClipboard() {
+        // Get the container number text
+        const containerNumberText = document.getElementById('result').innerText.replace('Container Number: ', '');
+        
+        // Create a temporary textarea element to hold the container number
+        const textarea = document.createElement('textarea');
+        textarea.value = containerNumberText;
+        document.body.appendChild(textarea);
+        
+        // Select and copy the text
+        textarea.select();
+        document.execCommand('copy');
+        
+        // Remove the temporary textarea
+        document.body.removeChild(textarea);
+
+        // Trigger the border animation
+        const result = document.getElementById('result');
+        result.classList.add('animate-border');
+
+        // Remove the class after animation ends to allow re-triggering
+        result.addEventListener('animationend', () => {
+            result.classList.remove('animate-border');
+        });
+    }
+
     </script>
 </body>
 </html>
